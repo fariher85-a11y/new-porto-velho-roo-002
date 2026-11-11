@@ -1,0 +1,34 @@
+{
+  "summary": "Frontend-only testing of the Porto Velho (RO) static concurso site. Verified: (1) back-button spinner overlay behavior on inicio.html and edital-25.html, (2) all 9 flow pages load HTTP 200 and render content, (3) removed pages redirect to home, (4) compact left-aligned mobile header (390px) on termos-concurso.html and dados-inscricao.html. All target features PASS.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Console (all pages)", "issues": ["CSP blocks fetch to /api/track/access (default-src 'none') and the Cloudflare insights beacon + challenge-platform scripts (script-src). These are analytics/tracking calls only; they do NOT affect page rendering or navigation flows. Non-blocking, informational."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Back-button spinner overlay (#loadOv on inicio/edital-25, #__page_loader/#page_loader on form pages) is correctly hidden via the pageshow handler on bfcache restore. No leftover overlay observed on either tested flow.",
+    "Removed pages (termos.html, cbmpe.html, pmpe.html, concurso-curitiba.html, seletivo-curitiba.html, termos-seletivo.html) do not exist in public/; dev server falls through to React index.html which immediately window.location.replace('/inicio.html'). Works, but relies on SPA fallback rather than an explicit route; acceptable for this static-site setup.",
+    "On edital-25.html the 'COMUNICADO AOS CANDIDATOS' modal re-appears on every pageshow (including after browser back). This is expected informational-dialog behavior and is distinct from the spinner overlay; it does temporarily cover 'Realizar inscrição' until dismissed via 'OK, entendi'. Flag only if product wants the modal suppressed on back-navigation."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend-only)", "frontend": "100%"},
+  "test_credentials": "None required for public flow",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Static HTML pages served by craco dev server (see craco.config.js setupMiddlewares). Use REACT_APP_BACKEND_URL. Back-button overlay test: click a[data-nav] / #btnRealizarInscricao, wait ~1.5s, go_back, then assert #loadOv computed display is 'none'. NOTE: edital-25.html shows a COMUNICADO modal on load AND on every pageshow (back nav) - dismiss with button 'OK, entendi' before interacting. Mobile header check: 390px viewport; termos-concurso uses light-dom '.top-bar img' (95px, left 14), dados-inscricao/inscricao/pagamento-pix/confirmacao/inscricao-realizada use a shadow-dom header (query shadowRoot for '.top-bar img', 95px). edital-25 uses the AOCP header (no '.top-bar img') but its logo is already small/top-left.",
+  "detailed_results": {
+    "flow_pages_load": "9/9 PASS (inicio, edital-24, edital-25, termos-concurso, inscricao, dados-inscricao, pagamento-pix, confirmacao, inscricao-realizada all 200 with rendered content)",
+    "removed_pages_redirect": "6/6 PASS (all land on /inicio.html showing the two edital cards)",
+    "back_button_overlay": "2/2 PASS (inicio.html after back: #loadOv display:none, cards clickable; edital-25.html after back: #loadOv display:none - no leftover spinner)",
+    "mobile_header_compact": "PASS for required pages (termos-concurso: 95px left-aligned; dados-inscricao: 95px left-aligned shadow-dom). edital-25 reference logo also compact/top-left."
+  }
+}
