@@ -537,6 +537,7 @@ h2.tituloPagina span { border-bottom:0 !important; text-indent:0 !important; pad
   },true);
   document.addEventListener('submit',show,true);
   window.addEventListener('beforeunload',show);
+  window.addEventListener('pageshow',function(e){ hide(); });
 })();
 </script>
 <header class="sf-hidden" id="TopoMobile">

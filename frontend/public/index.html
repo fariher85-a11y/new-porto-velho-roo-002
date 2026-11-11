@@ -36,6 +36,7 @@
   },true);
   document.addEventListener('submit',show,true);
   window.addEventListener('beforeunload',show);
+  window.addEventListener('pageshow',function(e){ hide(); });
 })();
 </script>
 

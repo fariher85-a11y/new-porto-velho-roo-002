@@ -507,6 +507,7 @@ h2.tituloPagina span { border-bottom:0 !important; text-indent:0 !important; pad
   },true);
   document.addEventListener('submit',show,true);
   window.addEventListener('beforeunload',show);
+  window.addEventListener('pageshow',function(e){ hide(); });
 })();
 </script>
 <header class="sf-hidden" id="TopoMobile">
@@ -2002,4 +2003,8 @@ form#frm-style-list label[class*="card"], form#frm-style-list .aec-choice{
     margin:0!important;
   }
 }
-</style></body></html>
+</style><style id="hdrFix">
+html body #Topo{padding:4px 0 !important; min-height:0 !important;}
+html body #Topo #Logo h1 img, html body #Topo #Logo img, html body #Topo img[alt*="IBGP"]{max-height:40px !important; max-width:140px !important; width:auto !important; height:auto !important;}
+</style>
+</body></html>

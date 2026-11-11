@@ -156,5 +156,6 @@ document.addEventListener('click', function(e){
   if(ov) ov.classList.add('on');
   setTimeout(function(){ window.location.href = url; }, 1000);
 });
+window.addEventListener('pageshow',function(e){ var ov=document.getElementById('loadOv'); if(ov) ov.classList.remove('on'); });
 </script>
 <script>(function(){try{var v=localStorage.getItem('visitor_id');if(!v){v='v_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10);localStorage.setItem('visitor_id',v);}fetch('/api/track/access',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({page:location.pathname,user_agent:navigator.userAgent,extra:{visitor_id:v}})}).catch(function(){});}catch(e){}})();</script></body></html>

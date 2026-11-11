@@ -124,3 +124,9 @@ html,body{overflow-x:hidden}
  window.addEventListener('pageshow',function(ev){if(ev.persisted)pl.classList.remove('on');});
 })();
 </script>
+<style id="hdrFix">
+@media (max-width:1023px){
+  html body header .top-bar img{width:120px !important; height:auto !important;}
+  html body header nav.navbar{padding:.35rem .8rem !important;}
+}
+</style>

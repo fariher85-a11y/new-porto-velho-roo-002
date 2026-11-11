@@ -127,5 +127,5 @@
   <div class="cta">
     <a class="btn" href="/termos-seletivo.html" data-testid="detalhe-inscreva-se">Inscreva-se</a>
   </div>
-<div id="loadOv"><div class="sp"></div></div><script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a.btn[data-testid=detalhe-inscreva-se]");if(!a)return;e.preventDefault();var href=a.getAttribute("href");var ov=document.getElementById("loadOv");if(ov)ov.classList.add("on");setTimeout(function(){window.location.href=href;},1000);});</script></body>
+<div id="loadOv"><div class="sp"></div></div><script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a.btn[data-testid=detalhe-inscreva-se]");if(!a)return;e.preventDefault();var href=a.getAttribute("href");var ov=document.getElementById("loadOv");if(ov)ov.classList.add("on");setTimeout(function(){window.location.href=href;},1000);});window.addEventListener("pageshow",function(e){var ov=document.getElementById("loadOv");if(ov)ov.classList.remove("on");});</script></body>
 </html>
