@@ -1415,26 +1415,35 @@ async def generate_pix_brcode(payload: Dict[str, Any]):
     cidade = (s.get('pix_cidade') or 'PORTO VELHO').upper()
 
     try:
-        valor = float(payload.get('valor', 0) or 0)
+        client_valor = float(payload.get('valor', 0) or 0)
     except Exception:
-        valor = 0.0
+        client_valor = 0.0
     txid = (payload.get('txid') or '').strip()
-    valor = VALOR_INSCRICAO
 
     # Fonte única de verdade: usa SEMPRE o valor real da inscrição (painel admin)
-    # quando existir, ignorando qualquer valor divergente enviado pelo cliente.
+    # quando existir. Só cai nos fallbacks quando o banco não tiver valor.
+    valor = 0.0
     cpf_lookup = re.sub(r'\D', '', (payload.get('cpf') or '') or '')
     if cpf_lookup:
         _f = {'cpf': cpf_lookup}
-        if payload.get('cargo_codigo'):
-            _f['cargo_codigo'] = str(payload.get('cargo_codigo'))
+        cc = str(payload.get('cargo_codigo') or '').strip()
+        if cc:
+            _digits = re.sub(r'\D', '', cc)
+            _f['cargo_codigo'] = {'$in': list({cc, _digits, f'COD {_digits}', f'COD{_digits}'})}
         insc = await _db.inscricoes.find_one(
             _f,
-            {'valor': 1},
+            {'valor': 1, 'cargo_titulo': 1},
             sort=[('created_at', -1)],
         )
-        if insc and insc.get('valor'):
-            valor = float(insc['valor'])
+        if insc:
+            if insc.get('valor'):
+                valor = float(insc['valor'])
+            elif insc.get('cargo_titulo'):
+                valor = valor_por_cargo(insc.get('cargo_titulo'))
+    # Fallbacks (nunca descarta o valor real): valor enviado pelo cliente
+    # (data-price da vaga, ex.: 140) e, só em último caso, o padrão.
+    if not valor or valor <= 0:
+        valor = client_valor if client_valor > 0 else VALOR_INSCRICAO
 
     pix_code = build_brcode(
         pix_key=key,
@@ -1515,8 +1524,8 @@ async def inscricao_resumo(cpf: str, cargo: str = '', edital: str = ''):
         'cpf': digits,
         'cargo_titulo': doc.get('cargo_titulo', ''),
         'cargo_codigo': doc.get('cargo_codigo', ''),
-        'valor': float(doc.get('valor') or VALOR_INSCRICAO),
-        'taxa': fmt_taxa(doc.get('valor') or VALOR_INSCRICAO),
+        'valor': float(doc.get('valor') or valor_por_cargo(doc.get('cargo_titulo', ''))),
+        'taxa': fmt_taxa(doc.get('valor') or valor_por_cargo(doc.get('cargo_titulo', ''))),
         'protocolo': doc.get('protocolo', ''),
         'concurso': doc.get('concurso', ''),
         'edital': doc.get('edital', ''),
