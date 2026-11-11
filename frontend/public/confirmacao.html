@@ -928,7 +928,7 @@ h2.tituloPagina span { border-bottom:0 !important; text-indent:0 !important; pad
       if(modal){
         modal.classList.add('is-open');
         var goNext = function(){ window.location.href='/inscricao-realizada.html'; };
-        var timer = setTimeout(goNext, 5000);
+        var timer = setTimeout(goNext, 2000);
         var okBtn = document.getElementById('conf-success-ok');
         if(okBtn){
           okBtn.onclick = function(){ clearTimeout(timer); goNext(); };
