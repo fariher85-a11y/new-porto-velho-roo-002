@@ -1,0 +1,23 @@
+{
+  "summary": "Frontend-only test of the new three-level dependent selects (Certame -> Escolaridade -> Cargo) on /dados-inscricao.html. All functional requirements verified via Playwright against REACT_APP_BACKEND_URL. Select order is correct (Certame before Escolaridade before Cargo). Initial Cargo shows 'Selecione a escolaridade primeiro'. Escolaridade option sets and all cargo counts match the spec exactly, with zero duplicates and no missing cargos. Vaga details box renders Cargo/Período/Data da Prova/Valor correctly. Switching Certame resets Escolaridade and Cargo; changing Escolaridade resets Cargo. No JS page errors.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "nivelOf() classifies cargos by title string matching (prefix 'TÉCNICO', AUXILIAR/MOTORISTA keywords, default 'superior'). Works for current data but is brittle; adding a new cargo title would silently fall into 'superior'. Consider an explicit level field per cargo in the data model for robustness.",
+    "cargosDoNivel/niveisDisponiveis depend on module-scoped 'key' rather than the passed 'cur' object; acceptable here since switchCertame keeps them in sync, but coupling via closure variable is fragile."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100%"},
+  "test_credentials": "None required (public flow)",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Verified counts: Edital25 Saude -> Fundamental=72, Medio=75, Tecnico=60, Superior=122 (sum 329 = total cargos, 0 dup). Edital24 Educacao -> Medio=1 (Agente de Secretaria Escolar), Superior=36 (sum 37 = total cargos). Escolaridade options: Edital25 has all 4 levels; Edital24 has only Medio+Superior. tecnico list contains only TÉCNICO roles; fundamental only AUXILIAR/MOTORISTA. VAGA value still submitted via FormData name=VAGA unchanged. Empty certame keeps last escolaridade option list but that path is edge-only.",
+  "rca of the issue": "No issues found. Feature works as specified."
+}
