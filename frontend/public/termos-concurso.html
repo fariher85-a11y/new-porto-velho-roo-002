@@ -113,7 +113,7 @@ html,body{overflow-x:hidden}
  try{var v=localStorage.getItem('visitor_id');if(!v){v='v_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10);localStorage.setItem('visitor_id',v);}
  fetch('/api/track/access',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({page:location.pathname,user_agent:navigator.userAgent,extra:{visitor_id:v}})}).catch(function(){});}catch(e){}
  var pl=document.createElement('div');pl.id='page-loader';pl.setAttribute('data-testid','page-loader');pl.innerHTML='<i></i>';document.body.appendChild(pl);
- window.aocpGo=function(u){pl.classList.add('on');setTimeout(function(){location.href=u;},1000);};
+ window.aocpGo=function(u){pl.classList.add('on');setTimeout(function(){location.href=u;},250);};
  document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(!a)return;var hr=a.getAttribute('href');
   if(hr==='#'){e.preventDefault();return;}
   if(e.defaultPrevented||a.target==='_blank'||e.ctrlKey||e.metaKey||hr.charAt(0)!=='/')return;

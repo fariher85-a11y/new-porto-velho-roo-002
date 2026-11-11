@@ -154,7 +154,7 @@ document.addEventListener('click', function(e){
   var url = el.getAttribute('data-nav');
   var ov = document.getElementById('loadOv');
   if(ov) ov.classList.add('on');
-  setTimeout(function(){ window.location.href = url; }, 1000);
+  setTimeout(function(){ window.location.href = url; }, 250);
 });
 window.addEventListener('pageshow',function(e){ var ov=document.getElementById('loadOv'); if(ov) ov.classList.remove('on'); });
 </script>

@@ -23,7 +23,7 @@
   function show(){ if(loader) loader.classList.remove('__hidden'); }
   function hide(){ if(loader) loader.classList.add('__hidden'); }
   var t0=Date.now();
-  function scheduleHide(){ var wait=Math.max(0,700-(Date.now()-t0)); setTimeout(hide,wait); }
+  function scheduleHide(){ var wait=Math.max(0,150-(Date.now()-t0)); setTimeout(hide,wait); }
   if(document.readyState==='complete') scheduleHide();
   else window.addEventListener('load',scheduleHide);
   document.addEventListener('click',function(e){

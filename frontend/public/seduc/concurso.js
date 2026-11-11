@@ -466,6 +466,8 @@
   }
 
   function escolaridadeOptHtml(){
+    var ce = document.getElementById('CERTAME');
+    if (ce && !ce.value) return '<option value="">SELECIONE A ESCOLARIDADE...</option>';
     return '<option value="">SELECIONE A ESCOLARIDADE...</option>' +
       niveisDisponiveis(cur.cargos).map(function(n){
         return '<option value="' + n + '">' + NIVEL_LABEL[n] + '</option>';
@@ -533,7 +535,12 @@
 
   function switchCertame(newKey){
     newKey = norm(newKey);
-    if (!newKey) return;
+    if (!newKey) {
+      var e0 = document.getElementById('ESCOLARIDADE');
+      if (e0) { e0.innerHTML = escolaridadeOptHtml(); e0.value = ''; }
+      fillVaga();
+      return;
+    }
     key = newKey;
     cur = C[key];
     window.SEAD_CONCURSO.key = key;
@@ -563,7 +570,7 @@
         ];
         var opts = '<option value="">SELECIONE ALGUM CONCURSO...</option>' +
           editais.map(function(e){
-            var sel = (e.k === key) ? ' selected' : '';
+            var sel = '';
             return '<option value="' + e.k + '"' + sel + '>' + e.label + '</option>';
           }).join('');
         wrap.innerHTML = '<label for="CERTAME" style="display:block;font-weight:600;margin-bottom:4px"><span class="error">*</span> Certame</label>' +
@@ -610,8 +617,10 @@
     if (sv){
       var found = null; cur.cargos.forEach(function(c){ if (c.v === sv) found = c; });
       if (found){
+        var ce = document.getElementById('CERTAME');
+        if (ce) ce.value = key;
         var esc = document.getElementById('ESCOLARIDADE');
-        if (esc) esc.value = nivelOf(key, found);
+        if (esc) { esc.innerHTML = escolaridadeOptHtml(); esc.value = nivelOf(key, found); }
         fillVaga();
         v.value = sv;
       }
