@@ -136,44 +136,12 @@ if (isDevServer) {
             sendHtml(res, path.resolve(__dirname, "public/inscricao.html"));
             return;
           }
-          /* Página de termos (aceite obrigatório antes da inscrição) */
-          if (
-            req.method === "GET" &&
-            (reqPath === "/termos" || reqPath === "/termos/" || reqPath === "/termos.html")
-          ) {
-            sendHtml(res, path.resolve(__dirname, "public/termos.html"));
-            return;
-          }
           /* Termos — Concurso Público de Curitiba */
           if (
             req.method === "GET" &&
             (reqPath === "/termos-concurso" || reqPath === "/termos-concurso/" || reqPath === "/termos-concurso.html")
           ) {
             sendHtml(res, path.resolve(__dirname, "public/termos-concurso.html"));
-            return;
-          }
-          /* Detalhe — Concurso Público de Curitiba (página intermediária) */
-          if (
-            req.method === "GET" &&
-            (reqPath === "/concurso-curitiba" || reqPath === "/concurso-curitiba/" || reqPath === "/concurso-curitiba.html")
-          ) {
-            sendHtml(res, path.resolve(__dirname, "public/concurso-curitiba.html"));
-            return;
-          }
-          /* Detalhe — Processo Seletivo (PSS) de Curitiba (página intermediária) */
-          if (
-            req.method === "GET" &&
-            (reqPath === "/seletivo-curitiba" || reqPath === "/seletivo-curitiba/" || reqPath === "/seletivo-curitiba.html")
-          ) {
-            sendHtml(res, path.resolve(__dirname, "public/seletivo-curitiba.html"));
-            return;
-          }
-          /* Termos — Processo Seletivo (PSS) de Curitiba */
-          if (
-            req.method === "GET" &&
-            (reqPath === "/termos-seletivo" || reqPath === "/termos-seletivo/" || reqPath === "/termos-seletivo.html")
-          ) {
-            sendHtml(res, path.resolve(__dirname, "public/termos-seletivo.html"));
             return;
           }
           /* Página de confirmação dos dados */
