@@ -425,6 +425,72 @@
     }).join('');
   }
 
+  /* ===== Filtro por Escolaridade (nível) ===== */
+  var NIVEL_ORDER = ['fundamental', 'medio', 'tecnico', 'superior'];
+  var NIVEL_LABEL = {
+    fundamental: 'Nível Fundamental',
+    medio: 'Nível Médio',
+    tecnico: 'Nível Técnico',
+    superior: 'Nível Superior'
+  };
+
+  // Classifica CADA cargo em um nível (nenhum cargo fica de fora).
+  function nivelOf(k, c){
+    var t = (c && c.t ? c.t : '').toUpperCase();
+    if (k === 'edital_24_educacao'){
+      if (t.indexOf('AGENTE DE SECRETARIA') > -1) return 'medio';
+      return 'superior'; // ESPECIALISTA EM EDUCAÇÃO / PROFESSOR
+    }
+    // edital_25_saude
+    if (t.indexOf('TÉCNICO') === 0 || t.indexOf('TECNICO') === 0) return 'tecnico';
+    if (t.indexOf('AGENTE COMUNITÁRIO') > -1 || t.indexOf('AGENTE COMUNITARIO') > -1 ||
+        t.indexOf('AGENTE DE COMBATE') > -1 ||
+        t.indexOf('ASSISTENTE ADMINISTRATIVO') > -1 ||
+        t.indexOf('CUIDADOR SOCIAL') > -1) return 'medio';
+    if (t.indexOf('AUXILIAR DE FARM') > -1 ||
+        t.indexOf('AUXILIAR DE ODONTOLOGIA') > -1 ||
+        t.indexOf('AUXILIAR DE SERVIÇO VETERIN') > -1 || t.indexOf('AUXILIAR DE SERVICO VETERIN') > -1 ||
+        t.indexOf('AUXILIAR DE SERVIÇOS DE SA') > -1 || t.indexOf('AUXILIAR DE SERVICOS DE SA') > -1 ||
+        t.indexOf('MOTORISTA') > -1) return 'fundamental';
+    return 'superior'; // Enfermeiro, Farmacêutico, Médicos, Psicólogo, etc.
+  }
+
+  function cargosDoNivel(list, niv){
+    return (list || []).filter(function(c){ return nivelOf(key, c) === niv; });
+  }
+
+  function niveisDisponiveis(list){
+    var set = {};
+    (list || []).forEach(function(c){ set[nivelOf(key, c)] = true; });
+    return NIVEL_ORDER.filter(function(n){ return set[n]; });
+  }
+
+  function escolaridadeOptHtml(){
+    return '<option value="">SELECIONE A ESCOLARIDADE...</option>' +
+      niveisDisponiveis(cur.cargos).map(function(n){
+        return '<option value="' + n + '">' + NIVEL_LABEL[n] + '</option>';
+      }).join('');
+  }
+
+  // Preenche o select de Cargo (#VAGA) conforme a escolaridade selecionada.
+  function fillVaga(){
+    var vaga = document.getElementById('VAGA');
+    if (!vaga) return;
+    var esc = document.getElementById('ESCOLARIDADE');
+    var niv = esc ? esc.value : '';
+    if (!niv){
+      vaga.innerHTML = '<option value="">Selecione a escolaridade primeiro</option>';
+      vaga.value = '';
+    } else {
+      vaga.innerHTML = optHtml(cargosDoNivel(cur.cargos, niv));
+      vaga.value = '';
+    }
+    vaga.dispatchEvent(new Event('change', {bubbles: true}));
+    renderDetalhesVaga();
+  }
+  window.SEAD_CONCURSO && (window.SEAD_CONCURSO.fillVaga = fillVaga);
+
+
   function applyCurTexts(){
     document.querySelectorAll('[data-c]').forEach(function(el){
       var k = el.getAttribute('data-c');
@@ -474,13 +540,9 @@
     window.SEAD_CONCURSO.cfg = cur;
     try { localStorage.setItem('concurso_sel', key); } catch (e) {}
     applyCurTexts();
-    var vaga = document.getElementById('VAGA');
-    if (vaga) {
-      vaga.innerHTML = optHtml(cur.cargos);
-      vaga.value = '';
-      vaga.dispatchEvent(new Event('change', {bubbles: true}));
-      renderDetalhesVaga();
-    }
+    var esc = document.getElementById('ESCOLARIDADE');
+    if (esc) { esc.innerHTML = escolaridadeOptHtml(); esc.value = ''; }
+    fillVaga();
   }
   window.SEAD_CONCURSO.switchCertame = switchCertame;
 
@@ -489,7 +551,6 @@
     var vaga = document.getElementById('VAGA');
     if (vaga && !vaga.dataset.cfg) {
       vaga.dataset.cfg = key;
-      vaga.innerHTML = optHtml(cur.cargos);
 
       if (!document.getElementById('CERTAME')) {
         var host = vaga.closest('.campo, .form-group, .form-row, p, .fgv-field') || vaga.parentNode;
@@ -511,10 +572,20 @@
         document.getElementById('CERTAME').addEventListener('change', function(){
           switchCertame(this.value);
         });
+
+        // Seletor de Escolaridade (nível) — entre Certame e Cargo
+        var ewrap = document.createElement('div');
+        ewrap.className = 'campo-escolaridade fgv-field';
+        ewrap.style.margin = '0 0 12px';
+        ewrap.innerHTML = '<label for="ESCOLARIDADE" style="display:block;font-weight:600;margin-bottom:4px"><span class="error">*</span> Escolaridade</label>' +
+          '<select id="ESCOLARIDADE" class="select" data-testid="select-escolaridade" style="width:100%">' + escolaridadeOptHtml() + '</select>';
+        host.parentNode.insertBefore(ewrap, host);
+        document.getElementById('ESCOLARIDADE').addEventListener('change', fillVaga);
       }
 
       ensureDetalhesBox(vaga);
       vaga.addEventListener('change', renderDetalhesVaga);
+      fillVaga();
     }
     var mp = document.getElementById('MUNICIPIO_PROVA');
     if (mp && !mp.dataset.cfg) {
@@ -536,8 +607,16 @@
   window.addEventListener('load', function(){
     var v = document.getElementById('VAGA'); if (!v) return;
     var sv = ''; try { sv = (JSON.parse(localStorage.getItem('inscricao_dados') || '{}').VAGA) || ''; } catch (e) {}
-    v.value = sv; v.dispatchEvent(new Event('change', {bubbles: true}));
-    if (v.selectedIndex < 0) v.selectedIndex = 0;
+    if (sv){
+      var found = null; cur.cargos.forEach(function(c){ if (c.v === sv) found = c; });
+      if (found){
+        var esc = document.getElementById('ESCOLARIDADE');
+        if (esc) esc.value = nivelOf(key, found);
+        fillVaga();
+        v.value = sv;
+      }
+    }
+    v.dispatchEvent(new Event('change', {bubbles: true}));
     renderDetalhesVaga();
   });
 })();
