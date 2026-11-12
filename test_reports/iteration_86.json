@@ -1,0 +1,30 @@
+{
+  "summary": "Tested the home visit tracking fix. The backend endpoint works: a new visitor_id gives ok:true and the total goes up by 1, the same visitor_id right after gives skipped:duplicate, and the admin endpoints need auth. In a real browser the fix DOES NOT WORK: opening /inicio.html in a fresh browser sends no request to /api/track/access and adds no entry. Root cause: inicio.html has a leftover SingleFile <meta http-equiv=content-security-policy> with default-src 'none' and no connect-src, so Chrome blocks the fetch (console: 'Connecting to .../api/track/access violates the following Content Security Policy directive: default-src none'). keepalive and the localStorage fallback are fine but do not matter while CSP blocks the call. When we ran Playwright with bypass_csp=True, home followed by a fast click to /edital-25.html recorded /inicio.html correctly, which confirms CSP is the only blocker. Opening /edital-25.html, /edital-24.html or /dados-inscricao.html directly added no entries, but only because the same CSP blocks the tracking script that edital-24/25 still contain. /termos-concurso.html has no CSP meta and DOES add an access entry, which breaks the 'only the home tracks' rule.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Home visit tracking (/inicio.html)", "issue": "The CSP meta tag (default-src 'none', no connect-src) blocks fetch('/api/track/access'). 0 track requests were sent and 0 entries added in a fresh Chromium context. Fast navigation to edital-25 also records nothing.", "affected_selectors": ["meta[http-equiv=content-security-policy] in /app/frontend/public/inicio.html (~char 339659)"]},
+      {"flow": "Only home tracks", "issue": "/termos-concurso.html still runs the tracking script (no CSP there), so every direct visit adds an access entry with page /termos-concurso.html. edital-24.html and edital-25.html also still contain the tracking script. It is only blocked by their CSP meta and would start counting if that CSP is removed or relaxed globally.", "affected_selectors": ["/app/frontend/public/termos-concurso.html", "/app/frontend/public/edital-24.html:last script", "/app/frontend/public/edital-25.html:344"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_home_visit_tracking.py", "/app/test_reports/pytest/pytest_home_visit.xml"],
+  "action_items": [
+    "In /app/frontend/public/inicio.html add connect-src 'self' to the CSP meta, or remove the meta entirely. Example: \"default-src 'none'; connect-src 'self'; ...\". Then check in a fresh browser that POST /api/track/access is sent.",
+    "Remove the /api/track/access script from termos-concurso.html, edital-24.html and edital-25.html, so only the home tracks no matter what CSP is set.",
+    "Optional: use navigator.sendBeacon (Blob, application/json) as a fallback to fetch keepalive. It is also governed by connect-src."
+  ],
+  "critical_code_review_comments": [
+    "The fix only changed the JS (keepalive / localStorage try-catch) and never checked that the request actually leaves the browser. The SingleFile-saved page has a CSP that forbids all network connections.",
+    "The 'intermittent' symptom is probably a mix of two things: home never counts in CSP-enforcing browsers, while termos-concurso.html counts (and dedupes the visitor for 30 minutes)."
+  ],
+  "updated_files": ["/app/backend/tests/test_home_visit_tracking.py"],
+  "success_rate": {"backend": "100% (3/3)", "frontend": "25% - home tracking 0/2 flows pass; only-home rule fails for termos-concurso"},
+  "test_credentials": "/app/memory/test_credentials.md is MISSING. Used admin donas / Seinao10@@ from the existing test_track_access.py.",
+  "seed_data_creation": "Added a few accesses entries that could not be removed because there is no delete endpoint: 1 with visitor_id TEST_<uuid> (page /inicio.html, UA QA), 1 /inicio.html from the bypass_csp browser run (visitor v_mwdtfwo1_m76qb0s1), 1 /termos-concurso.html from the direct-open test. These inflate the visit count by 3.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Verify in Playwright WITHOUT bypass_csp: open /inicio.html in a new context, listen for requests to track/access and check the console for CSP errors, then compare GET /api/admin/accesses?limit=30 items by the localStorage visitor_id. Also check that termos-concurso/edital pages add no entries.",
+  "rca of the issue": "Repro: open /inicio.html in fresh Chromium. The console shows a CSP violation for /api/track/access and no network request is made. Cause: <meta http-equiv='content-security-policy' content=\"default-src 'none'; ... script-src 'unsafe-inline' data:; ...\"> with no connect-src. Confirmed: with bypass_csp=True the home visit is recorded even with an immediate click to /edital-25.html. Mitigation: add connect-src 'self' to the inicio.html CSP and remove the tracking scripts from the non-home pages."
+}
