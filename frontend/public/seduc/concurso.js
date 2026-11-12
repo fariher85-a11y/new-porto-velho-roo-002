@@ -10,7 +10,7 @@
       edital_curto: 'Edital nº 24/2026',
       orgao_edital: 'Prefeitura Municipal de Porto Velho - RO',
       logo: '/assets/home/img1.webp',
-      periodo: '13/10/26 10:00 - 11/11/26 23:59',
+      periodo: '13/10/26 10:00 - 16/11/26 23:59',
       dataProva: '13/12/2026 14:45:00',
       cargos: [
         {v:'343',t:'AGENTE DE SECRETARIA ESCOLAR – ÁREA URBANA - PORTO VELHO',p:'90.00'},
@@ -61,7 +61,7 @@
       edital_curto: 'Edital nº 25/2026',
       orgao_edital: 'Prefeitura Municipal de Porto Velho - RO',
       logo: '/assets/home/img1.webp',
-      periodo: '13/10/26 10:00 - 11/11/26 23:59',
+      periodo: '13/10/26 10:00 - 16/11/26 23:59',
       dataProva: '13/12/2026 14:45:00',
       cargos: [
         {v:'201',t:'AUXILIAR DE FARMÁCIA - ÁREA URBANA - PORTO VELHO',p:'90.00'},
