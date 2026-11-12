@@ -1,0 +1,22 @@
+{
+  "summary": "Retested the home visit tracking fix in real Chromium with CSP enforced (no bypass_csp). Everything passes. (1) A fresh context on /inicio.html sends POST /api/track/access, which returns 200 with no CSP violation for that request, and a new entry with page /inicio.html shows up in GET /api/admin/accesses for the localStorage visitor_id. (2) Opening /inicio.html and immediately clicking the Edital 25 link to go to /edital-25.html still sends the request and records /inicio.html (keepalive works). (3) Opening /termos-concurso.html, /edital-24.html and /edital-25.html directly in fresh contexts sends 0 track requests and adds 0 new access entries. (4) On /termos-concurso.html the page loader turns on (class 'on') and navigation works for the nav 'Início' link, the VOLTAR button (to /inicio.html) and CONTINUAR after checking the terms box (to /inscricao.html?c=porto-velho_concurso). No JS page errors. Backend regression tests: 3/3 pass.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_home_visit_tracking.py", "/app/test_reports/pytest/pytest_home_visit.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Harmless console noise: the inicio.html CSP (script-src 'unsafe-inline' data:) blocks Cloudflare's injected beacon.min.js and challenge-platform scripts. This does not affect tracking. Only relevant if Cloudflare analytics or challenges are wanted on the home page.",
+    "termos-concurso.html has no CSP meta, unlike the other pages. That is fine now that it has no tracking script."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (3/3)", "frontend": "100% (4/4 flows)"},
+  "test_credentials": "Admin donas / Seinao10@@ from /app/memory/test_credentials.md (works)",
+  "seed_data_creation": "2 real /inicio.html access entries were added by the browser tests (visitor_ids v_mwdtitpl_1j9163gq and v_mwdtiwkf_ipneuw2m) and 1 TEST_ visitor from pytest. They cannot be removed because there is no delete endpoint.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Home tracking works under CSP. To verify, open fresh contexts, listen for requests to track/access, and match entries in GET /api/admin/accesses?limit=50 by the localStorage visitor_id. On termos-concurso, use the visible elements (#btn-voltar-termos, #bt-continuar after checking #termos, a.btn-ghost[href='/inicio.html']). The first a[href='/inscricao.html'] is hidden."
+}
