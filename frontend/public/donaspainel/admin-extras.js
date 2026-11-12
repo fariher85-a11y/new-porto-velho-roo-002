@@ -973,3 +973,97 @@
   }
   new MutationObserver(inject).observe(document.documentElement, { childList: true, subtree: true });
 })();
+
+
+/* ============================================================
+   Filtro único para "Atividade em tempo real"
+   Mostra/esconde os eventos do feed conforme o tipo escolhido.
+   ============================================================ */
+(function () {
+  var FILTER_ID = 'dp-activity-filter';
+  var STORAGE_KEY = 'dp_activity_filter';
+
+  var OPTIONS = [
+    { v: '', label: 'Todas as atividades' },
+    { v: 'acesso', label: 'Acessos ao site' },
+    { v: 'cadastro', label: 'Cadastros' },
+    { v: 'inscricao', label: 'Inscrições realizadas' },
+    { v: 'pix_gerado', label: 'PIX gerado' },
+    { v: 'pix_copiado', label: 'PIX copiado' },
+    { v: 'comprovante', label: 'Comprovante baixado' },
+    { v: 'lembrete', label: 'Lembretes' }
+  ];
+
+  function injectStyle() {
+    if (document.getElementById('dp-activity-filter-css')) return;
+    var st = document.createElement('style');
+    st.id = 'dp-activity-filter-css';
+    st.textContent = [
+      '.dp-actfilter{display:flex;align-items:center;gap:8px;margin:2px 0 10px}',
+      '.dp-actfilter label{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.4px}',
+      '.dp-actfilter select{flex:1;min-width:0;padding:8px 12px;border-radius:9px;border:1px solid #e2e4f0;',
+      'background:#fff;color:#312e81;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;',
+      'outline:none;transition:border-color .12s, box-shadow .12s}',
+      '.dp-actfilter select:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.15)}',
+      '.dp-event[data-dp-hidden="1"]{display:none !important}'
+    ].join('');
+    (document.head || document.documentElement).appendChild(st);
+  }
+
+  function kindOf(ev) {
+    var node = ev.querySelector('.desc') || ev;
+    var d = (node.textContent || '').toLowerCase();
+    if (d.indexOf('novo acesso') > -1 || d.indexOf('acesso ') > -1) return 'acesso';
+    if (d.indexOf('cadastro') > -1) return 'cadastro';
+    if (d.indexOf('inscri') > -1) return 'inscricao';
+    if (d.indexOf('pix gerado') > -1) return 'pix_gerado';
+    if (d.indexOf('pix copiado') > -1) return 'pix_copiado';
+    if (d.indexOf('comprovante') > -1 || d.indexOf('baixad') > -1) return 'comprovante';
+    if (d.indexOf('lembrete') > -1) return 'lembrete';
+    return 'outro';
+  }
+
+  function currentValue() {
+    try { return localStorage.getItem(STORAGE_KEY) || ''; } catch (e) { return ''; }
+  }
+
+  function applyFilter(container, value) {
+    if (!container) return;
+    var events = container.querySelectorAll('.dp-event');
+    for (var i = 0; i < events.length; i++) {
+      var ev = events[i];
+      var show = (!value) || (kindOf(ev) === value);
+      if (show) ev.removeAttribute('data-dp-hidden');
+      else ev.setAttribute('data-dp-hidden', '1');
+    }
+  }
+
+  function inject() {
+    var container = document.querySelector('.dp-events');
+    if (!container) return;
+
+    var sel = document.getElementById(FILTER_ID);
+    if (!sel || !document.body.contains(sel)) {
+      injectStyle();
+      var bar = document.createElement('div');
+      bar.className = 'dp-actfilter';
+      var opts = OPTIONS.map(function (o) {
+        return '<option value="' + o.v + '">' + o.label + '</option>';
+      }).join('');
+      bar.innerHTML = '<label for="' + FILTER_ID + '">Filtrar</label>' +
+        '<select id="' + FILTER_ID + '" data-testid="activity-filter-select">' + opts + '</select>';
+      container.parentNode.insertBefore(bar, container);
+      sel = bar.querySelector('select');
+      sel.value = currentValue();
+      sel.addEventListener('change', function () {
+        try { localStorage.setItem(STORAGE_KEY, sel.value); } catch (e) {}
+        applyFilter(document.querySelector('.dp-events'), sel.value);
+      });
+    }
+    applyFilter(container, sel.value);
+  }
+
+  new MutationObserver(inject).observe(document.documentElement, { childList: true, subtree: true });
+  document.addEventListener('DOMContentLoaded', inject);
+  inject();
+})();
