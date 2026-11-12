@@ -1,0 +1,27 @@
+{
+  "summary": "Frontend-only test of the single activity-type filter injected by admin-extras.js into the 'Atividade em tempo real' card at /donaspainel. Login (donas) worked. The dropdown (data-testid=activity-filter-select) appears once, with a 'Filtrar' label, right above .dp-events, and has the 8 options in the right order. The default 'Todas' shows all 29/29 items. Each filter showed only matching items: acesso 18, cadastro 3, inscricao 3, pix_gerado 2, pix_copiado 1, comprovante 2, lembrete 0. After an AO VIVO refresh (new access event, picked up within about 5s), the 'Inscrições realizadas' filter was still applied: the new top item had data-dp-hidden=1 and the dropdown was still there with no duplicate. The selection also survived a page reload (localStorage), and resetting to 'Todas' showed all 30 items. All requested checks passed.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Dashboard - Atividade em tempo real", "issues": ["If a filter matches nothing (for example 'Lembretes' right now), the feed is just blank with no empty-state message such as 'Nenhuma atividade deste tipo'."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Optional: show an empty-state message when the selected filter matches no feed items.",
+    "Optional: the filter only works on the items already loaded in the feed (the latest N events). Older events of a type (for example lembretes) are never shown. Consider filtering on the server if that matters."
+  ],
+  "critical_code_review_comments": [
+    "kindOf() classifies items by keywords in the order acesso > cadastro > inscri > pix... A description that contains more than one keyword (for example a future 'PIX gerado - inscrição X' or a candidate name containing 'Cadastro') would be put in the wrong type. Classifying by event type (a data attribute or icon class) would be more robust if the bundle exposes one.",
+    "The selection is saved in localStorage, so the filter stays on after a reload. That may be intended, but an admin could come back and think events are missing."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100%"},
+  "test_credentials": "donas / Seinao10@@ from /app/memory/test_credentials.md",
+  "seed_data_creation": "Sent one POST /api/track/access with visitor_id TEST_filter_<ts> to trigger a feed refresh. This added one 'Novo acesso desktop' event and one access record.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Login inputs: first <input> is the username, input[type=password] is the password, then press Enter. The filter shows up right after .dp-events renders. Feed items: .dp-event with .desc. Hidden items have data-dp-hidden=1. The filter value is stored in localStorage key dp_activity_filter."
+}
